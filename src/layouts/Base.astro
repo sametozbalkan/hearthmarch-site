@@ -1,0 +1,67 @@
+---
+/**
+ * The document every page shares: the head (title, description, link cards, icons, fonts)
+ * and the body around the page's content.
+ */
+import '../styles/global.css';
+import { SITE_URL } from '../config.ts';
+import { copyFor } from '../copy/index.ts';
+import type { PageMeta } from '../copy/types.ts';
+import { LANGS, type Lang, OG_LOCALE, localePath } from '../i18n.ts';
+
+interface Props {
+  lang: Lang;
+  meta: PageMeta;
+  /** The page's path in its language's tree, starting and ending with a slash. */
+  path: string;
+  /** Pages that must stay out of search results, such as the 404 page. */
+  noindex?: boolean;
+}
+
+const { lang, meta, path, noindex = false } = Astro.props;
+const site = copyFor(lang).site;
+const canonical = new URL(localePath(lang, path), SITE_URL).href;
+const card = new URL('/hearthmarch-card.jpg', SITE_URL).href;
+const alternates = LANGS.length > 1 ? LANGS.map((l) => ({ lang: l, href: new URL(localePath(l, path), SITE_URL).href })) : [];
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{meta.title}</title>
+    <meta name="description" content={meta.description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    {alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+    <meta name="theme-color" content="#121838" />
+
+    <link rel="preload" href="/fonts/literata-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="/fonts/fraunces-soft-latin.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
+    <meta property="og:title" content={meta.title} />
+    <meta property="og:description" content={meta.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={card} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={site.cardAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={meta.title} />
+    <meta name="twitter:description" content={meta.description} />
+    <meta name="twitter:image" content={card} />
+    <meta name="twitter:image:alt" content={site.cardAlt} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

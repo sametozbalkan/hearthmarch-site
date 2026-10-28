@@ -1,0 +1,152 @@
+---
+/**
+ * The home page: one day on the steppe. Dawn's hero, the seven stations of the tale with
+ * the crossing decorations in the gaps between them, and the eclipse night's close.
+ */
+import { Picture } from 'astro:assets';
+import { PICTURE_FORMATS, STATIONS, c1DragonTail, c2FeltClouds, c3Standard, c4Huma, logo, vista } from '../art.ts';
+import SiteFooter from '../components/SiteFooter.astro';
+import Station from '../components/Station.astro';
+import WishlistButton from '../components/WishlistButton.astro';
+import { copyFor } from '../copy/index.ts';
+import type { Lang } from '../i18n.ts';
+import Base from '../layouts/Base.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const { site, home } = copyFor(lang);
+
+const station = (index: number) => {
+  const s = STATIONS[index];
+  if (!s) throw new Error(`No station ${index}`);
+  return s;
+};
+const LOGO_WIDTHS = [480, 800, 1200, 1600];
+---
+
+<Base lang={lang} meta={home.meta} path="/">
+  <main>
+    <section class="hero">
+      <div class="hero-stage">
+        <div class="hero-copy">
+          <h1 class="hero-title" id="title">
+            <Picture
+              src={logo}
+              alt={site.name}
+              {...PICTURE_FORMATS}
+              widths={LOGO_WIDTHS}
+              sizes="(max-aspect-ratio: 6/5) 88vw, 34vw"
+              loading="eager"
+            />
+          </h1>
+          <p class="tagline">{home.tagline}</p>
+          <WishlistButton label={site.wishlist} />
+          <p class="coming">{site.comingTo}</p>
+        </div>
+        <div class="hero-art">
+          <Picture
+            src={vista}
+            alt={home.heroAlt}
+            {...PICTURE_FORMATS}
+            widths={[640, 960, 1280, 1672]}
+            sizes="(max-aspect-ratio: 6/5) 120vh, (max-aspect-ratio: 3/2) 133vw, 100vw"
+            priority
+          />
+        </div>
+      </div>
+    </section>
+
+    <div class="interlude has-deco to-dawn" data-scroll-range="cover">
+      <Picture
+        src={c2FeltClouds}
+        alt=""
+        class="deco deco-clouds"
+        {...PICTURE_FORMATS}
+        widths={[400, 700, 1000, 1606]}
+        sizes="(max-width: 464px) 260px, (min-width: 1536px) 860px, 56vw"
+      />
+    </div>
+
+    <Station station={station(0)} copy={home.stations.hearth} prologue={home.prologue} />
+
+    <div class="interlude dawn-to-day"></div>
+
+    <Station station={station(1)} copy={home.stations.day} flip />
+
+    <div class="interlude has-deco day-to-dusk" data-scroll-range="cover">
+      <Picture
+        src={c3Standard}
+        alt=""
+        class="deco deco-standard"
+        {...PICTURE_FORMATS}
+        widths={[180, 360, 528]}
+        sizes="150px"
+      />
+    </div>
+
+    <Station station={station(2)} copy={home.stations.steppe} />
+
+    <div class="interlude dusk-to-night"></div>
+
+    <Station station={station(3)} copy={home.stations.night} flip />
+
+    <div class="interlude has-deco night-to-eclipse" data-scroll-range="cover">
+      <Picture
+        src={c1DragonTail}
+        alt=""
+        class="deco deco-tail"
+        {...PICTURE_FORMATS}
+        widths={[480, 800, 1200, 1800]}
+        sizes="(min-width: 1595px) 1180px, 74vw"
+      />
+    </div>
+
+    <Station station={station(4)} copy={home.stations.eclipse} />
+
+    <div class="interlude eclipse-to-ember"></div>
+
+    <Station station={station(5)} copy={home.stations.goc} />
+
+    <div class="interlude has-deco ember-to-deep" data-scroll-range="cover">
+      <Picture
+        src={c4Huma}
+        alt=""
+        class="deco deco-huma"
+        {...PICTURE_FORMATS}
+        widths={[300, 600, 900, 1200]}
+        sizes="(max-width: 625px) 200px, (min-width: 1500px) 480px, 32vw"
+      />
+    </div>
+
+    <Station station={station(6)} copy={home.stations.together} />
+
+    <div class="interlude deep-to-close"></div>
+
+    <div class="close band-close tone-dark">
+      <p class="outro">{home.outro}</p>
+      <div class="close-mark">
+        <div class="eclipse-moon" aria-hidden="true"></div>
+        <Picture
+          src={logo}
+          alt=""
+          class="close-logo"
+          {...PICTURE_FORMATS}
+          widths={LOGO_WIDTHS}
+          sizes="(max-width: 604px) 86vw, 520px"
+        />
+      </div>
+      <WishlistButton label={site.wishlist} />
+      <p class="coming">{site.comingTo}</p>
+    </div>
+  </main>
+  <SiteFooter lang={lang} />
+
+  <script>
+    import { startMotionFallback } from '../scripts/motion.ts';
+
+    startMotionFallback();
+  </script>
+</Base>

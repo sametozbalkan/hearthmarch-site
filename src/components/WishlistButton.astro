@@ -1,0 +1,12 @@
+---
+/** The Steam wishlist button. Its link comes from `steamUrl()` in `src/config.ts`. */
+import { steamUrl } from '../config.ts';
+
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<a class="felt-button" href={steamUrl()}>{label}</a>

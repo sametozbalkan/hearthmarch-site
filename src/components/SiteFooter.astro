@@ -1,0 +1,27 @@
+---
+/** The footer on every page: the press kit, the contact address, the privacy policy and the copyright. */
+import { CONTACT_EMAIL } from '../config.ts';
+import { copyFor } from '../copy/index.ts';
+import { type Lang, localePath } from '../i18n.ts';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const site = copyFor(lang).site;
+---
+
+<footer class="site-footer">
+  <nav aria-label={site.footerNavLabel}>
+    <ul>
+      <li><a href={localePath(lang, '/press/')}>{site.pressKit}</a></li>
+      <li>
+        <span>{site.contact}:</span>
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+      </li>
+      <li><a href={localePath(lang, '/privacy/')}>{site.privacy}</a></li>
+      <li class="copyright">{site.copyright}</li>
+    </ul>
+  </nav>
+</footer>

@@ -1,0 +1,27 @@
+---
+/** The inner pages' header: the logo, linking home. */
+import { Picture } from 'astro:assets';
+import { PICTURE_FORMATS, logo } from '../art.ts';
+import { copyFor } from '../copy/index.ts';
+import { type Lang, localePath } from '../i18n.ts';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const site = copyFor(lang).site;
+---
+
+<header class="page-head">
+  <a href={localePath(lang, '/')}>
+    <Picture
+      src={logo}
+      alt={site.homeLink}
+      {...PICTURE_FORMATS}
+      widths={[480, 800]}
+      sizes="(max-width: 470px) 64vw, 300px"
+      loading="eager"
+    />
+  </a>
+</header>

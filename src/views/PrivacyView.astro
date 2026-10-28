@@ -1,0 +1,58 @@
+---
+/** The privacy policy. While `draftNotice` is set, the page says it is a draft. */
+import PageHead from '../components/PageHead.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { CONTACT_EMAIL } from '../config.ts';
+import { copyFor } from '../copy/index.ts';
+import type { Lang } from '../i18n.ts';
+import Base from '../layouts/Base.astro';
+import { splitAround } from '../lib/text.ts';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const { privacy } = copyFor(lang);
+const [contactBefore, contactAfter] = splitAround(privacy.contactText, '{email}');
+---
+
+<Base lang={lang} meta={privacy.meta} path="/privacy/">
+  <div class="page tone-dark">
+    <PageHead lang={lang} />
+    <main class="page-main">
+      <h1>{privacy.heading}</h1>
+      <p class="updated">{privacy.updated}</p>
+      {privacy.draftNotice && <p class="draft-notice">{privacy.draftNotice}</p>}
+      <p class="lead">{privacy.summary}</p>
+
+      {
+        privacy.sections.map((section) => (
+          <section>
+            <h2>{section.heading}</h2>
+            {section.paragraphs.map((p) => <p>{p}</p>)}
+          </section>
+        ))
+      }
+
+      <section>
+        <h2>{privacy.linksHeading}</h2>
+        <ul>
+          {
+            privacy.links.map((link) => (
+              <li>
+                <a href={link.href}>{link.name}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section>
+        <h2>{privacy.contactHeading}</h2>
+        <p>{contactBefore}<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>{contactAfter}</p>
+      </section>
+    </main>
+  </div>
+  <SiteFooter lang={lang} />
+</Base>

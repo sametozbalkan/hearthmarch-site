@@ -1,0 +1,27 @@
+---
+/** The page GitHub Pages shows for a path that does not exist. */
+import PageHead from '../components/PageHead.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { copyFor } from '../copy/index.ts';
+import { type Lang, localePath } from '../i18n.ts';
+import Base from '../layouts/Base.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const { notFound } = copyFor(lang);
+---
+
+<Base lang={lang} meta={notFound.meta} path="/404.html" noindex>
+  <div class="page tone-dark">
+    <PageHead lang={lang} />
+    <main class="page-main not-found">
+      <h1>{notFound.heading}</h1>
+      <p class="lead">{notFound.text}</p>
+      <a class="felt-button" href={localePath(lang, '/')}>{notFound.back}</a>
+    </main>
+  </div>
+  <SiteFooter lang={lang} />
+</Base>
