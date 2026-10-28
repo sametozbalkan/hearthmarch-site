@@ -90,4 +90,9 @@ export const home: HomeCopy = {
     },
   },
   outro: 'Here the song ends. The rest of the tale is yours to ride.',
+  chapters: 'Chapters',
+  music: 'Music',
+  volume: 'Music volume',
+  listen: 'Listen to the tale',
+  replay: 'Hear this chapter again',
 };

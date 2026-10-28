@@ -1,0 +1,98 @@
+---
+/**
+ * One chapter of the tale on the stage: its wall (the hour's colour), its text panel and its
+ * work with the label. The text comes first in the reading order; the layout hangs the work
+ * beside it or above it. The kilim (shape "runner") hangs as a band that travels sideways.
+ *
+ * Without the stage (no JavaScript) the same markup reads as a stacked page, one station
+ * after another.
+ */
+import { Picture } from 'astro:assets';
+import { type Band, PICTURE_FORMATS, type Station } from '../art.ts';
+import type { StationCopy } from '../copy/types.ts';
+
+interface Props {
+  station: Station;
+  copy: StationCopy;
+  /** Hang the work on the right and the text on the left. */
+  flip?: boolean;
+  /** The replay control's accessible name. */
+  replayLabel: string;
+}
+
+const { station, copy, flip = false, replayLabel } = Astro.props;
+const LIGHT_BANDS: readonly Band[] = ['dawn', 'day', 'dusk'];
+const tone = LIGHT_BANDS.includes(station.band) ? 'tone-light' : 'tone-dark';
+const headingId = `chapter-${station.id}`;
+const classes = ['scene', 'chapter', `band-${station.band}`, tone, `shape-${station.shape}`, flip ? 'flip' : ''];
+const [p1, p2] = copy.paragraphs;
+const ratio = station.image.width / station.image.height;
+
+const WORK_SIZES: Record<Station['shape'], { widths: number[]; sizes: string }> = {
+  wide: { widths: [480, 800, 1200, 1672], sizes: '(min-aspect-ratio: 23/20) 56vw, 92vw' },
+  square: { widths: [480, 800, 1254], sizes: '(min-aspect-ratio: 23/20) 44vw, 80vw' },
+  runner: { widths: [960, 1440, 1800, 2172], sizes: '(min-aspect-ratio: 23/20) 130vh, 96vh' },
+};
+const { widths, sizes } = WORK_SIZES[station.shape];
+---
+
+<section class:list={classes} id={station.id} data-scene={station.id} aria-labelledby={headingId}>
+  <div class="wall"></div>
+  <div class="scene-body">
+    <div class="panel">
+      <div class="panel-head">
+        <p class="numeral" aria-hidden="true">{copy.numeral}</p>
+        <button type="button" class="replay" data-replay={station.id} hidden>
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
+            <path
+              d="M12 5a7 7 0 1 1-6.6 4.7"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"></path>
+            <path d="M3.6 4.2 5.4 10l5.6-2.3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span class="visually-hidden">{replayLabel}</span>
+        </button>
+      </div>
+      <h2 id={headingId}>{copy.heading}</h2>
+      <div class="tale-text">
+        <p class="p1">{p1}</p>
+        {p2 && <p class="p2">{p2}</p>}
+      </div>
+    </div>
+    {
+      station.shape === 'runner' ? (
+        <div class="work runner">
+          <figure class="work-figure">
+            <div class="kilim-band">
+              <div class="kilim-track">
+                <Picture src={station.image} alt={copy.alt} {...PICTURE_FORMATS} widths={widths} sizes={sizes} />
+              </div>
+            </div>
+            <figcaption>
+              <span class="work-subject">{copy.subject}</span>
+              <span class="work-label">{copy.inspiredBy}</span>
+            </figcaption>
+          </figure>
+        </div>
+      ) : (
+        <div class="work" style={`--ratio: ${ratio.toFixed(4)}`}>
+          <figure class="work-figure">
+            <div class="frame-box">
+              <div class="frame">
+                <div class="work-art">
+                  <Picture src={station.image} alt={copy.alt} {...PICTURE_FORMATS} widths={widths} sizes={sizes} />
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              <span class="work-subject">{copy.subject}</span>
+              <span class="work-label">{copy.inspiredBy}</span>
+            </figcaption>
+          </figure>
+        </div>
+      )
+    }
+  </div>
+</section>

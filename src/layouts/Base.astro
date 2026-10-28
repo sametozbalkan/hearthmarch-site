@@ -60,6 +60,7 @@ const alternates = LANGS.length > 1 ? LANGS.map((l) => ({ lang: l, href: new URL
     <meta name="twitter:description" content={meta.description} />
     <meta name="twitter:image" content={card} />
     <meta name="twitter:image:alt" content={site.cardAlt} />
+    <slot name="head" />
   </head>
   <body>
     <slot />

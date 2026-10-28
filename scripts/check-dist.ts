@@ -179,6 +179,27 @@ for (const file of files.filter((f) => f.endsWith('.js'))) {
   }
 }
 
+// The tale's sound: only the player loads it, after the visitor's first press or key, so no
+// page names an audio file; every file the player names exists.
+const audioNamed = new Set<string>();
+for (const page of pages) {
+  if (/\/audio\/[^"'\s]+\.(?:mp3|webm|m4a)/.test(readFileSync(page, 'utf8'))) {
+    problems.push(`${relative(DIST, page)}: names an audio file, so it could load before the visitor asks for sound`);
+  }
+}
+for (const file of files.filter((f) => f.endsWith('.js'))) {
+  for (const m of readFileSync(file, 'utf8').matchAll(/\/audio\/[\w/-]+\.(?:mp3|webm|m4a)/g)) audioNamed.add(m[0]);
+}
+for (const url of audioNamed) {
+  if (!fileFor(url)) problems.push(`the player names ${url}, which does not exist`);
+}
+const audioFiles = files.filter((f) => /[\\/]audio[\\/]/.test(f));
+const megabytes = (list: string[]): string => (list.reduce((n, f) => n + statSync(f).size, 0) / 1024 / 1024).toFixed(2);
+console.log(
+  `Audio: ${audioNamed.size} files named by the player, all present; ${megabytes(audioFiles)} MB on disk ` +
+    `(Opus and MP3 ${megabytes(audioFiles.filter((f) => !f.endsWith('.m4a')))} MB, AAC and MP3 ${megabytes(audioFiles.filter((f) => !f.endsWith('.webm')))} MB).`,
+);
+
 const sitemap = join(DIST, 'sitemap.xml');
 if (existsSync(sitemap)) {
   for (const m of readFileSync(sitemap, 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g)) {

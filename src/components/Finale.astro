@@ -1,0 +1,89 @@
+---
+/**
+ * The finale: the night of the eclipse passes. On the stage the shadow slides off the moon,
+ * the copper rim grows into moonlight and a first light of dawn, embers rise from the fire
+ * under the logo, and the logo, the closing line and the wishlist button arrive in turn.
+ * The markup is the end state, which is what reduced motion and the stacked page show.
+ */
+import { Picture } from 'astro:assets';
+import { PICTURE_FORMATS, logo } from '../art.ts';
+import WishlistButton from './WishlistButton.astro';
+
+interface Props {
+  outro: string;
+  wishlist: string;
+  comingTo: string;
+}
+
+const { outro, wishlist, comingTo } = Astro.props;
+
+/** A small seeded generator, so the embers are the same on every build. */
+function generator(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+const random = generator(1914);
+const EMBERS = Array.from({ length: 30 }, () => {
+  const duration = 4.2 + random() * 4.6;
+  return {
+    x: (8 + random() * 84).toFixed(1),
+    size: (2 + random() * 2.6).toFixed(1),
+    duration: duration.toFixed(2),
+    delay: (-random() * duration).toFixed(2),
+    sway: ((random() - 0.5) * 70).toFixed(0),
+    drift: ((random() - 0.5) * 90).toFixed(0),
+    rise: (34 + random() * 30).toFixed(0),
+  };
+});
+---
+
+<div class="scene scene-finale band-close tone-dark" data-scene="finale">
+  <div class="wall"></div>
+  <div class="finale-sky" aria-hidden="true">
+    <div class="finale-night"></div>
+    <div class="finale-dawn"></div>
+  </div>
+  <div class="scene-body finale-body">
+    <div class="finale-mark">
+      <div class="moon" aria-hidden="true">
+        <div class="moon-glow moon-glow-copper"></div>
+        <div class="moon-glow moon-glow-silver"></div>
+        <div class="moon-disc">
+          <div class="moon-face"></div>
+          <div class="moon-shadow"></div>
+        </div>
+        <div class="moon-rim"></div>
+      </div>
+      <div class="finale-fire" aria-hidden="true"></div>
+      <div class="finale-embers" aria-hidden="true">
+        {
+          EMBERS.map((e) => (
+            <span
+              class="ember"
+              style={`--x:${e.x}%;--s:${e.size}px;--d:${e.duration}s;--l:${e.delay}s;--sway:${e.sway}px;--drift:${e.drift}px;--h:${e.rise}svh`}
+            />
+          ))
+        }
+      </div>
+      <div class="finale-logo-glow" aria-hidden="true"></div>
+      <div class="finale-logo">
+        <Picture
+          src={logo}
+          alt=""
+          {...PICTURE_FORMATS}
+          widths={[480, 800, 1200, 1600]}
+          sizes="(max-width: 604px) 86vw, 520px"
+        />
+      </div>
+    </div>
+    <p class="finale-outro">{outro}</p>
+    <div class="finale-cta">
+      <WishlistButton label={wishlist} />
+      <p class="coming">{comingTo}</p>
+    </div>
+  </div>
+</div>

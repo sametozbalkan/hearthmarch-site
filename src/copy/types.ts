@@ -52,8 +52,18 @@ export interface HomeCopy {
   heroAlt: string;
   prologue: string;
   stations: Record<StationId, StationCopy>;
-  /** The line that ends the tale, above the closing logo. */
+  /** The line that ends the tale, under the closing logo. */
   outro: string;
+  /** The chapter rail's name for screen readers. */
+  chapters: string;
+  /** The name of the music's switch, at the top right (it stops and restarts the music). */
+  music: string;
+  /** The name of the music's volume control, beside its switch. */
+  volume: string;
+  /** The narration's switch: the ozan reads the tale only when asked to. */
+  listen: string;
+  /** The small control in a chapter's text that plays its narration again. */
+  replay: string;
 }
 
 /** One row of the press kit's fact sheet: plain text, or one of the addresses in `src/config.ts`. */

@@ -1,0 +1,32 @@
+---
+/**
+ * The chapter rail: a small mark for each of the seven chapters at the stage's edge. It shows
+ * where the tale is (`aria-current`, set by the stage's script) and each mark jumps to its
+ * chapter. It shows only on the stage; the stacked page needs none.
+ */
+import type { StationCopy, StationId } from '../copy/types.ts';
+
+interface Props {
+  label: string;
+  chapters: ReadonlyArray<{ id: StationId; copy: StationCopy }>;
+}
+
+const { label, chapters } = Astro.props;
+---
+
+<nav class="rail" aria-label={label}>
+  <ol>
+    {
+      chapters.map(({ id, copy }) => (
+        <li>
+          <a href={`#${id}`} data-rail={id}>
+            <span class="rail-mark" aria-hidden="true" />
+            <span class="rail-label">
+              {copy.numeral}. {copy.heading}
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>

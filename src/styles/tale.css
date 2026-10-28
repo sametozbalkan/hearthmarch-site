@@ -1,0 +1,1538 @@
+/*
+ * The home page's tale: the prologue, the seven chapters with their works, the four cut-outs
+ * and the finale.
+ *
+ * Two layouts share one markup:
+ * - The stage (`html.stage`, turned on by the page's first script): one pinned screen. The
+ *   scroll moves the tale from scene to scene; `src/tale.ts` holds the keyframes, which CSS
+ *   scroll-driven animations play (`html.stage.sda`) or the page's script plays elsewhere
+ *   (`html.stage.motion-js`). Scenes lie on top of each other; each brings its own wall, the
+ *   colour of its hour, which rises over the one before.
+ * - The stacked page (no JavaScript, or a screen too small for a scene): one station after
+ *   another, each painting its own wall, with the hour blending in the gaps between them.
+ *
+ * Only `opacity` and `transform` (with `translate`) ever animate. Text sits on a wall, never
+ * on a work. Never change the case of text here: Turkish gets the dotted and dotless i wrong.
+ */
+
+/* ---------- The walls: the colour of each hour ---------- */
+
+.band-dawn {
+  --wall-a: var(--dawn-rose);
+  --wall-b: var(--dawn-gold);
+}
+
+.band-day {
+  --wall-a: var(--day-a);
+  --wall-b: var(--day-b);
+}
+
+.band-dusk {
+  --wall-a: var(--dusk-a);
+  --wall-b: var(--dusk-b);
+}
+
+.band-night {
+  --wall-a: var(--night-a);
+  --wall-b: var(--night-b);
+}
+
+.band-eclipse {
+  --wall-a: var(--eclipse-a);
+  --wall-b: var(--eclipse-b);
+}
+
+.band-ember {
+  --wall-a: var(--ember-a);
+  --wall-b: var(--ember-b);
+}
+
+.band-deep {
+  --wall-a: var(--deep-a);
+  --wall-b: var(--deep-b);
+}
+
+.band-close {
+  --wall-a: var(--close);
+  --wall-b: var(--close);
+}
+
+/* ---------- The text panel ---------- */
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+  margin: 0 0 14px;
+}
+
+/* The chapter's numeral beside a kilim diamond, like the ones on the logo's letters. */
+.numeral {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  color: var(--accent);
+}
+
+.numeral::before {
+  content: '';
+  flex: none;
+  width: 13px;
+  height: 13px;
+  rotate: 45deg;
+  background: radial-gradient(circle, var(--turquoise) 0 26%, var(--felt-red) 29%);
+  box-shadow: 0 0 0 1.5px var(--ink);
+}
+
+.panel h2 {
+  margin: 0 0 0.5em;
+  font-size: clamp(2rem, 1.25rem + 2.7vw, 3.4rem);
+  letter-spacing: -0.012em;
+  color: var(--text);
+}
+
+.panel h2:focus {
+  outline: none;
+}
+
+.tale-text p {
+  position: relative;
+  margin: 0 0 0.95em;
+}
+
+.tale-text p:last-child {
+  margin-bottom: 0;
+}
+
+/* The paragraph the ozan is reading: a soft thread of the accent colour beside it. */
+.tale-text p::before,
+.prologue-line::before,
+.finale-outro::before {
+  content: '';
+  position: absolute;
+  top: 0.3em;
+  bottom: 0.3em;
+  left: -14px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.tale-text p.is-reading::before,
+.prologue-line.is-reading::before,
+.finale-outro.is-reading::before {
+  opacity: 0.85;
+}
+
+/* The replay control: small, in the panel's head, only while the sound is on. */
+.replay {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -8px -8px -8px 0;
+  padding: 0;
+  color: var(--accent);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.replay[hidden] {
+  display: none;
+}
+
+.replay svg {
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  box-sizing: content-box;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.85;
+}
+
+.replay:hover svg {
+  opacity: 1;
+}
+
+.replay:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 0;
+}
+
+/* ---------- The works ---------- */
+
+.work {
+  position: relative;
+  margin: 0;
+}
+
+.work-figure {
+  position: relative;
+  isolation: isolate;
+  margin: 0;
+}
+
+/* A picture light: a soft pool of light on the wall above the work. */
+.frame::before {
+  content: '';
+  position: absolute;
+  top: -62%;
+  left: -6%;
+  right: -6%;
+  z-index: -1;
+  height: 112%;
+  background: radial-gradient(closest-side, var(--wall-light), transparent);
+  pointer-events: none;
+}
+
+.frame {
+  --mat-w: clamp(10px, 2.1vw, 26px);
+  --frame-b: clamp(4px, 0.45vw, 7px);
+  position: relative;
+  padding: var(--mat-w);
+  background: var(--mat);
+  border: var(--frame-b) solid var(--walnut);
+  box-shadow:
+    inset 0 0 0 1px rgb(58 37 24 / 0.18),
+    0 30px 46px -26px rgb(12 5 2 / 0.6),
+    0 6px 14px -6px rgb(12 5 2 / 0.35);
+}
+
+.work-art {
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgb(58 37 24 / 0.22);
+}
+
+.work-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.work figcaption {
+  display: grid;
+  gap: 2px;
+  margin-top: 14px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+.work-subject {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.work-label {
+  font-style: italic;
+}
+
+/* ---------- The göç: the kilim runner ---------- */
+
+/* Without motion the whole runner hangs within the page, its fringes in view. */
+.kilim-band {
+  position: relative;
+  width: min(100% - 2 * var(--gutter), 1500px);
+  margin-inline: auto;
+}
+
+.kilim-track img {
+  display: block;
+  width: 100%;
+  height: auto;
+  box-shadow:
+    0 26px 40px -24px rgb(6 2 4 / 0.7),
+    0 0 0 1px rgb(0 0 0 / 0.25);
+}
+
+.runner figcaption {
+  width: min(100% - 2 * var(--gutter), 40rem);
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* ---------- The finale ---------- */
+
+.finale-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.finale-mark {
+  --moon: min(68vw, 42svh, 420px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 640px);
+}
+
+/* The moon of the Tutulma. Its end state is clear: the shadow has slid off. */
+.moon {
+  position: relative;
+  width: var(--moon);
+  aspect-ratio: 1;
+}
+
+.moon-glow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.moon-glow-copper {
+  inset: -38%;
+  background: radial-gradient(closest-side, rgb(196 92 52 / 0.42), rgb(150 46 30 / 0.16) 55%, rgb(150 46 30 / 0) 100%);
+  opacity: 0;
+}
+
+.moon-glow-silver {
+  inset: -52%;
+  background: radial-gradient(closest-side, rgb(255 242 210 / 0.4), rgb(214 196 255 / 0.12) 48%, rgb(214 196 255 / 0) 100%);
+}
+
+.moon-disc {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+/* The moon's seas: broad, soft and faint, as they look to the eye. */
+.moon-face {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(34% 27% at 31% 33%, rgb(168 150 120 / 0.2), rgb(168 150 120 / 0) 100%),
+    radial-gradient(24% 36% at 20% 58%, rgb(168 150 120 / 0.15), rgb(168 150 120 / 0) 100%),
+    radial-gradient(17% 15% at 57% 37%, rgb(168 150 120 / 0.16), rgb(168 150 120 / 0) 100%),
+    radial-gradient(22% 17% at 67% 53%, rgb(168 150 120 / 0.14), rgb(168 150 120 / 0) 100%),
+    radial-gradient(7% 6% at 83% 41%, rgb(168 150 120 / 0.2), rgb(168 150 120 / 0) 100%),
+    radial-gradient(19% 11% at 43% 73%, rgb(168 150 120 / 0.1), rgb(168 150 120 / 0) 100%),
+    radial-gradient(circle at 50% 50%, rgb(150 118 80 / 0) 62%, rgb(150 118 80 / 0.22) 100%),
+    radial-gradient(circle at 44% 40%, #fbf3e0 0%, #f1e3c2 46%, #e2cfa6 80%, #c8b086 100%);
+}
+
+/* The earth's shadow: dark red at its heart, soft at its edge. */
+.moon-shadow {
+  position: absolute;
+  inset: -7%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    #2c090c 0%,
+    #33090d 70%,
+    rgb(58 14 18 / 0.86) 84%,
+    rgb(58 14 18 / 0) 100%
+  );
+  transform: translate3d(-118%, -34%, 0);
+}
+
+.moon-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1.5px rgb(214 128 74 / 0.85),
+    0 0 26px 4px rgb(196 92 52 / 0.35);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The hearth under the logo, and the embers it sends up. */
+.finale-fire {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: calc(var(--moon) * 0.58 + min(86vw, 520px) * 0.3);
+  width: min(62vw, 320px);
+  height: 64px;
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+.finale-fire::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 178 92 / 0.55), rgb(222 96 44 / 0.22) 58%, rgb(222 96 44 / 0) 100%);
+}
+
+.finale-embers {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: calc(var(--moon) * 0.58 + min(86vw, 520px) * 0.3 + 30px);
+  width: min(56vw, 300px);
+  height: 0;
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+.ember {
+  position: absolute;
+  bottom: 0;
+  left: var(--x);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff3c8 0 28%, #ffb04a 58%, rgb(255 132 40 / 0) 100%);
+  opacity: 0;
+}
+
+.finale-logo-glow {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: calc(var(--moon) * 0.58 - 20px);
+  width: min(96vw, 640px);
+  height: calc(min(86vw, 520px) * 0.42 + 40px);
+  translate: -50% 0;
+  background: radial-gradient(closest-side, rgb(255 186 104 / 0.3), rgb(255 150 80 / 0.1) 60%, rgb(255 150 80 / 0) 100%);
+  pointer-events: none;
+}
+
+.finale-logo {
+  position: relative;
+  z-index: 2;
+  width: min(86vw, 520px);
+  margin-top: calc(var(--moon) * -0.42);
+  line-height: 0;
+}
+
+.finale-logo img {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 6px 18px rgb(0 0 0 / 0.55));
+}
+
+.finale-outro {
+  position: relative;
+  max-width: 30ch;
+  margin: clamp(30px, 6svh, 56px) auto 0;
+  font-size: clamp(1.15rem, 1rem + 0.7vw, 1.45rem);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.finale-cta {
+  margin-top: clamp(18px, 3.4svh, 34px);
+}
+
+.finale-cta .coming {
+  text-shadow: none;
+  color: var(--cream-soft);
+}
+
+/* The finale's sky: a moonlit night over the eclipse's dark, and dawn rising at its foot. */
+.finale-sky {
+  display: none;
+}
+
+/* ---------- Cut-outs ---------- */
+
+.deco {
+  display: block;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ====================================================================================
+   The stacked page: no JavaScript, or a screen too small for the stage.
+   ==================================================================================== */
+
+:root:not(.stage) .scene {
+  position: relative;
+  padding-block: var(--station-pad);
+  background: linear-gradient(to bottom, var(--wall-a), var(--wall-b));
+}
+
+:root:not(.stage) .wall,
+:root:not(.stage) .rail {
+  display: none;
+}
+
+:root:not(.stage) .chapter .scene-body {
+  width: min(100% - 2 * var(--gutter), 1240px);
+  margin-inline: auto;
+  display: grid;
+  gap: clamp(28px, 4vw, 64px);
+  align-items: center;
+}
+
+:root:not(.stage) .chapter .work {
+  order: -1;
+}
+
+:root:not(.stage) .panel {
+  max-width: 34rem;
+}
+
+:root:not(.stage) .frame img,
+:root:not(.stage) .work-art img {
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  :root:not(.stage) .chapter .scene-body {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+  }
+
+  :root:not(.stage) .chapter.flip .scene-body {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+  }
+
+  :root:not(.stage) .chapter.flip .work {
+    order: 2;
+  }
+
+  :root:not(.stage) .chapter.shape-square .scene-body {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 5fr);
+  }
+
+  :root:not(.stage) .chapter.shape-square .work {
+    width: min(100%, 520px);
+    justify-self: end;
+  }
+}
+
+/* The göç stacked: the text centred above the runner. */
+:root:not(.stage) .shape-runner .scene-body {
+  display: block;
+  width: auto;
+}
+
+:root:not(.stage) .shape-runner .panel {
+  width: min(100% - 2 * var(--gutter), 40rem);
+  max-width: none;
+  margin: 0 auto clamp(36px, 6vh, 64px);
+  text-align: center;
+}
+
+:root:not(.stage) .shape-runner .panel-head {
+  justify-content: center;
+}
+
+:root:not(.stage) .shape-runner .work {
+  order: 0;
+}
+
+.scene-prologue .scene-body {
+  display: grid;
+  place-items: center;
+}
+
+.prologue-line {
+  position: relative;
+  max-width: 34rem;
+  margin: 0;
+  font-size: clamp(1.15rem, 1rem + 0.7vw, 1.45rem);
+  font-style: italic;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text);
+}
+
+:root:not(.stage) .scene-prologue {
+  padding-block: clamp(28px, 6vh, 64px) 0;
+}
+
+:root:not(.stage) .scene-prologue + .chapter {
+  padding-top: clamp(36px, 7vh, 80px);
+}
+
+:root:not(.stage) .prologue-line {
+  width: min(100% - 2 * var(--gutter), 36rem);
+}
+
+/* The gaps between stations, where one hour turns into the next. */
+.interlude {
+  position: relative;
+  height: var(--interlude);
+  background: linear-gradient(to bottom, var(--from), var(--to));
+}
+
+.interlude.has-deco {
+  height: var(--interlude-deco);
+}
+
+.to-dawn {
+  --from: var(--dawn-rose);
+  --to: var(--dawn-rose);
+}
+
+.dawn-to-day {
+  --from: var(--dawn-gold);
+  --to: var(--day-a);
+}
+
+.day-to-dusk {
+  --from: var(--day-b);
+  --to: var(--dusk-a);
+}
+
+/* Dusk into night passes through the sunset's ember and violet. */
+.dusk-to-night {
+  height: clamp(140px, 30vh, 320px);
+  background: linear-gradient(
+    to bottom,
+    var(--dusk-b) 0%,
+    var(--sunset-ember) 34%,
+    var(--sunset-violet) 70%,
+    var(--night-a) 100%
+  );
+}
+
+.night-to-eclipse {
+  background: linear-gradient(to bottom, var(--night-b) 0%, var(--eclipse-violet) 50%, var(--eclipse-a) 100%);
+}
+
+.eclipse-to-ember {
+  --from: var(--eclipse-b);
+  --to: var(--ember-a);
+}
+
+.ember-to-deep {
+  --from: var(--ember-b);
+  --to: var(--deep-a);
+}
+
+.deep-to-close {
+  --from: var(--deep-b);
+  --to: var(--close);
+}
+
+/* The cut-outs rest in the gaps of the stacked page. */
+:root:not(.stage) .deco {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+:root:not(.stage) .deco-clouds {
+  left: 6vw;
+  width: clamp(260px, 56vw, 860px);
+}
+
+:root:not(.stage) .deco-standard {
+  right: max(3vw, 16px);
+  width: auto;
+  height: min(40vh, 420px);
+}
+
+:root:not(.stage) .deco-tail {
+  left: -2vw;
+  width: clamp(320px, 74vw, 1180px);
+}
+
+:root:not(.stage) .deco-huma {
+  left: 8vw;
+  width: clamp(200px, 32vw, 480px);
+}
+
+@media (max-width: 899px) {
+  :root:not(.stage) .deco-standard {
+    display: none;
+  }
+}
+
+/* The finale stacked: the night has passed, still. */
+:root:not(.stage) .scene-finale {
+  overflow: clip;
+  padding: clamp(64px, 12vh, 140px) var(--gutter) clamp(48px, 8vh, 96px);
+  background: linear-gradient(to bottom, #120a24 0%, #1a2150 55%, #3a2348 82%, #6a3448 100%);
+}
+
+:root:not(.stage) .finale-embers {
+  display: none;
+}
+
+/* ====================================================================================
+   The stage
+   ==================================================================================== */
+
+:root.stage {
+  --stage-top: max(84px, 10svh);
+  --stage-x: max(var(--gutter), 76px);
+  --stage-bottom: max(36px, 6svh);
+}
+
+:root.stage .tale {
+  position: relative;
+  height: calc(var(--tale-total) * 1vh + 100vh);
+  height: calc(var(--tale-total) * 1svh + 100lvh);
+  view-timeline: --tale block;
+}
+
+:root.stage .stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100lvh;
+  overflow: clip;
+  isolation: isolate;
+  background: var(--dawn-rose);
+}
+
+:root.stage .scene,
+:root.stage .interlude {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Scenes far from the stage wait below it, so their pictures load only as the tale nears, and
+   skip rendering while they wait (they stay in the reading order). */
+:root.stage .scene:not(.is-near),
+:root.stage .interlude:not(.is-near) {
+  translate: 0 400lvh;
+  content-visibility: auto;
+}
+
+:root.stage .interlude {
+  z-index: 4;
+  height: auto;
+  background: none;
+}
+
+:root.stage .interlude:not(.has-deco) {
+  display: none;
+}
+
+/* Each wall rises from below, its soft top edge carrying the next hour over the last. */
+:root.stage .wall {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -50vh;
+  top: -50lvh;
+  height: 150vh;
+  height: 150lvh;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0) 0%, var(--wall-a) 33.34%, var(--wall-b) 100%);
+}
+
+/* Dusk into night passes through the sunset's ember and violet, night into the eclipse
+   through violet. */
+:root.stage .band-night > .wall {
+  background: linear-gradient(
+    to bottom,
+    rgb(169 83 58 / 0) 0%,
+    var(--sunset-ember) 11%,
+    var(--sunset-violet) 23%,
+    var(--night-a) 33.34%,
+    var(--night-b) 100%
+  );
+}
+
+:root.stage .band-eclipse > .wall {
+  background: linear-gradient(
+    to bottom,
+    rgb(58 26 63 / 0) 0%,
+    var(--eclipse-violet) 18%,
+    var(--eclipse-a) 33.34%,
+    var(--eclipse-b) 100%
+  );
+}
+
+:root.stage .scene-body {
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  padding: var(--stage-top) var(--stage-x) var(--stage-bottom);
+}
+
+:root.stage .scene.is-current .scene-body {
+  pointer-events: auto;
+}
+
+/* ---------- Chapters on the stage ---------- */
+
+:root.stage .chapter .scene-body {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 4.6fr);
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: 'work panel';
+  align-items: center;
+  column-gap: clamp(28px, 4.5vw, 84px);
+}
+
+:root.stage .chapter.flip .scene-body {
+  grid-template-columns: minmax(0, 4.6fr) minmax(0, 7fr);
+  grid-template-areas: 'panel work';
+}
+
+:root.stage .chapter.shape-square .scene-body {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 5fr);
+}
+
+:root.stage .panel {
+  grid-area: panel;
+  align-self: center;
+  max-width: 36rem;
+}
+
+:root.stage .panel h2 {
+  font-size: clamp(1.75rem, min(1.1rem + 2.4vw, 0.9rem + 3.9svh), 3.4rem);
+}
+
+:root.stage .tale-text {
+  font-size: clamp(1rem, min(0.9rem + 0.35vw, 0.8rem + 1svh), 1.18rem);
+  line-height: 1.6;
+}
+
+/* The work takes the room the text leaves; its frame keeps the picture's proportions. */
+:root.stage .chapter .work {
+  grid-area: work;
+  align-self: stretch;
+  min-height: 0;
+  container-type: size;
+}
+
+:root.stage .chapter .work-figure {
+  --mat-w: clamp(8px, min(1.6vw, 2.4svh), 24px);
+  --frame-b: clamp(4px, 0.4vw, 7px);
+  --chrome: calc(2 * (var(--mat-w) + var(--frame-b)));
+  --cap: calc(2 * 1.45 * 0.92rem + 14px);
+  display: flex;
+  flex-direction: column;
+  width: min(100cqw, (100cqh - var(--chrome) - var(--cap)) * var(--ratio) + var(--chrome));
+  height: 100%;
+  margin-inline: auto;
+  justify-content: center;
+}
+
+:root.stage .chapter.flip .work-figure,
+:root.stage .chapter.shape-square:not(.flip) .work-figure {
+  margin-inline: auto 0;
+}
+
+:root.stage .chapter:not(.flip):not(.shape-square) .work-figure {
+  margin-inline: 0 auto;
+}
+
+:root.stage .chapter .frame {
+  --mat-w: inherit;
+  --frame-b: inherit;
+}
+
+:root.stage .work-art {
+  aspect-ratio: var(--ratio);
+}
+
+:root.stage .work-art img {
+  height: 100%;
+  object-fit: cover;
+  transform-origin: 50% 46%;
+}
+
+:root.stage .work figcaption {
+  flex: none;
+  margin-top: 12px;
+  font-size: 0.92rem;
+}
+
+/* Two steps: the second paragraph takes the first one's place halfway through the dwell. */
+:root.stage .chapter[data-steps='2'] .tale-text {
+  display: grid;
+}
+
+:root.stage .chapter[data-steps='2'] .tale-text > p {
+  grid-area: 1 / 1;
+  margin: 0;
+}
+
+/* ---------- The göç on the stage: the runner travels across ---------- */
+
+:root.stage .shape-runner .scene-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: 'panel' 'work';
+  row-gap: clamp(16px, 3svh, 40px);
+}
+
+:root.stage .shape-runner .panel {
+  justify-self: center;
+  max-width: 46rem;
+  text-align: center;
+}
+
+:root.stage .shape-runner .panel-head {
+  justify-content: center;
+}
+
+:root.stage .shape-runner .runner {
+  grid-area: work;
+  align-self: stretch;
+  min-height: 0;
+  container-type: size;
+}
+
+:root.stage .runner .work-figure {
+  --cap: calc(2 * 1.45 * 0.92rem + 14px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+:root.stage .kilim-band {
+  width: 100vw;
+  height: min(100cqh - var(--cap), 46svh, 33vw);
+  margin-inline: calc(50% - 50vw);
+  overflow: clip;
+  container-type: size;
+}
+
+/* A runner wider than the screen slides from its head to its tail; a narrower one travels
+   across, in from the left and out to the right, as the caravan walks. */
+:root.stage .kilim-track {
+  --kilim-a: max((300cqh - 100cqw) / 2, 22cqw);
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(100cqh * 3);
+  height: 100%;
+  transform: translate3d(-50%, 0, 0);
+}
+
+:root.stage .kilim-track img {
+  height: 100%;
+}
+
+/* ---------- The prologue on the stage ---------- */
+
+:root.stage .scene-prologue .scene-body {
+  padding-inline: max(var(--gutter), 24px);
+}
+
+:root.stage .prologue-line {
+  max-width: 30ch;
+  font-size: clamp(1.3rem, 1rem + 1.4vw, 2.1rem);
+  line-height: 1.45;
+}
+
+/* ---------- The finale on the stage ---------- */
+
+:root.stage .finale-body {
+  justify-content: center;
+  padding-inline: max(var(--gutter), 20px);
+}
+
+:root.stage .finale-sky {
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.finale-night,
+.finale-dawn {
+  position: absolute;
+  inset: 0;
+}
+
+.finale-night {
+  background: linear-gradient(to bottom, #0b1030 0%, #151c4a 50%, #24204a 100%);
+}
+
+.finale-dawn {
+  background: linear-gradient(
+    to top,
+    rgb(232 132 96 / 0.5) 0%,
+    rgb(176 86 92 / 0.28) 16%,
+    rgb(90 46 84 / 0.12) 34%,
+    rgb(90 46 84 / 0) 52%
+  );
+}
+
+:root.stage .scene-finale:not(.cta-live) .finale-cta {
+  pointer-events: none;
+}
+
+/* ---------- Cut-outs on the stage ---------- */
+
+:root.stage .deco {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  will-change: transform;
+}
+
+:root.stage .deco-clouds {
+  top: 30%;
+  width: clamp(300px, 72vw, 1000px);
+}
+
+:root.stage .deco-standard {
+  top: auto;
+  bottom: -6svh;
+  width: auto;
+  height: min(84svh, 820px);
+  translate: -50% 0;
+}
+
+:root.stage .deco-tail {
+  width: clamp(380px, 100vw, 1600px);
+}
+
+:root.stage .deco-huma {
+  top: 44%;
+  width: clamp(260px, 56vw, 800px);
+}
+
+/* ---------- The chapter rail ---------- */
+
+.rail {
+  position: absolute;
+  z-index: 6;
+  left: max(10px, env(safe-area-inset-left));
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--cream);
+}
+
+.stage[data-tone='light'] .rail {
+  color: var(--ink);
+  --rail-pill: rgb(255 246 226 / 0.94);
+  --rail-pill-ink: var(--ink);
+}
+
+.stage[data-tone='dark'] .rail,
+.rail {
+  --rail-pill: rgb(20 14 30 / 0.92);
+  --rail-pill-ink: var(--cream);
+}
+
+.rail ol {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rail a {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: inherit;
+  border-radius: 8px;
+}
+
+.rail-mark {
+  width: 10px;
+  height: 10px;
+  rotate: 45deg;
+  border: 1.5px solid currentColor;
+  opacity: 0.62;
+  transition:
+    opacity 160ms ease,
+    scale 160ms ease;
+}
+
+.rail a:hover .rail-mark {
+  opacity: 1;
+}
+
+.rail a[aria-current] .rail-mark {
+  background: radial-gradient(circle, var(--turquoise) 0 24%, var(--felt-red) 28%);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1.5px rgb(255 246 226 / 0.7);
+  opacity: 1;
+  scale: 1.45;
+}
+
+.rail-label {
+  position: absolute;
+  left: calc(100% + 2px);
+  top: 50%;
+  padding: 5px 10px 6px;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--rail-pill-ink);
+  background: var(--rail-pill);
+  border-radius: 6px;
+  box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.5);
+  opacity: 0;
+  translate: -4px -50%;
+  pointer-events: none;
+  transition:
+    opacity 150ms ease,
+    translate 150ms ease;
+}
+
+.rail a:hover .rail-label,
+.rail a:focus-visible .rail-label {
+  opacity: 1;
+  translate: 0 -50%;
+}
+
+.rail a:focus-visible {
+  outline: 3px solid var(--focus, var(--turquoise-bright));
+  outline-offset: -2px;
+}
+
+.stage[data-tone='light'] .rail a:focus-visible {
+  outline-color: var(--turquoise-deep);
+}
+
+/* ---------- The sound: the bed's switch and volume, and the narration's switch ---------- */
+
+.sound-dock {
+  position: fixed;
+  z-index: 40;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 8px;
+}
+
+.sound-dock[hidden] {
+  display: none;
+}
+
+.sound-toggle,
+.sound-volume {
+  position: relative;
+  min-height: 48px;
+  color: var(--cream);
+  background: rgb(18 24 56 / 0.86);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 8px 20px -10px rgb(4 6 20 / 0.8);
+}
+
+.sound-toggle::before,
+.sound-volume::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1.5px dashed rgb(244 233 210 / 0.5);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.sound-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 48px;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sound-toggle:hover {
+  background: rgb(30 40 88 / 0.94);
+}
+
+.sound-toggle:focus-visible {
+  outline: 3px solid var(--turquoise-bright);
+  outline-offset: 3px;
+}
+
+.bed-toggle {
+  width: 48px;
+}
+
+.narration-toggle {
+  padding: 0 18px 0 13px;
+}
+
+/* While the ozan reads, his switch glows like the felt button. */
+.narration-toggle[aria-pressed='true'] {
+  background: var(--felt-red);
+}
+
+.narration-toggle[aria-pressed='true']:hover {
+  background: #b5352c;
+}
+
+.sound-icon {
+  flex: none;
+  overflow: visible;
+}
+
+.sound-wave,
+.listen-on {
+  opacity: 0;
+}
+
+.sound-toggle[aria-pressed='true'] .sound-wave,
+.sound-toggle[aria-pressed='true'] .listen-on {
+  opacity: 1;
+}
+
+.sound-toggle[aria-pressed='true'] .sound-mute {
+  opacity: 0;
+}
+
+.sound-volume {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+/* The volume slider: a felt thread with a cream bead. */
+.sound-volume input {
+  --fill: 20%;
+  width: 112px;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.sound-volume input::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--gold) var(--fill), rgb(244 233 210 / 0.32) var(--fill));
+}
+
+.sound-volume input::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.sound-volume input::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgb(244 233 210 / 0.32);
+}
+
+.sound-volume input::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--gold);
+}
+
+.sound-volume input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+
+.sound-volume input:focus-visible {
+  outline: 3px solid var(--turquoise-bright);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* On a phone the switches are round, their names for screen readers only, and the row is
+   short enough to leave the chapter rail its room. */
+@media (max-width: 599px) {
+  .sound-dock {
+    top: max(10px, env(safe-area-inset-top));
+    right: max(10px, env(safe-area-inset-right));
+    gap: 4px;
+  }
+
+  .sound-toggle,
+  .bed-toggle,
+  .narration-toggle {
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .sound-volume {
+    min-height: 44px;
+    padding: 0 8px;
+  }
+
+  .sound-volume input {
+    width: 56px;
+  }
+
+  .sound-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* ---------- Portrait screens: the work above the text ---------- */
+
+@media (max-aspect-ratio: 23/20) {
+  :root.stage {
+    --stage-top: calc(66px + env(safe-area-inset-top));
+    --stage-x: max(16px, var(--gutter));
+    --stage-bottom: max(18px, env(safe-area-inset-bottom), 3svh);
+  }
+
+  :root.stage .chapter .scene-body,
+  :root.stage .chapter.flip .scene-body,
+  :root.stage .chapter.shape-square .scene-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas: 'work' 'panel';
+    align-items: stretch;
+    row-gap: clamp(14px, 2.6svh, 32px);
+  }
+
+  :root.stage .panel {
+    justify-self: center;
+    width: 100%;
+    max-width: 40rem;
+  }
+
+  /* The work rests just above its text, as large as the room its label leaves; the free wall
+     above it takes the picture light. */
+  :root.stage .chapter .work-figure,
+  :root.stage .chapter.flip .work-figure,
+  :root.stage .chapter:not(.flip):not(.shape-square) .work-figure,
+  :root.stage .chapter.shape-square:not(.flip) .work-figure {
+    width: 100%;
+    margin-inline: 0;
+    justify-content: flex-end;
+  }
+
+  :root.stage .chapter .frame-box {
+    display: flex;
+    flex: 1 1 0;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 0;
+    container-type: size;
+  }
+
+  :root.stage .chapter .frame {
+    width: min(100cqw, (100cqh - var(--chrome)) * var(--ratio) + var(--chrome));
+  }
+
+  :root.stage .chapter .work figcaption {
+    text-align: center;
+  }
+
+  :root.stage .kilim-band {
+    height: min(100cqh - var(--cap), 34svh, 64vw);
+  }
+
+  /* The rail runs along the top edge, beside the sound button. */
+  .rail {
+    left: max(8px, env(safe-area-inset-left));
+    top: max(10px, env(safe-area-inset-top));
+    translate: none;
+  }
+
+  .rail ol {
+    grid-auto-flow: column;
+    gap: 0;
+  }
+
+  .rail a {
+    width: 28px;
+    height: 44px;
+  }
+
+  .rail-label {
+    left: 50%;
+    top: calc(100% + 2px);
+    translate: -50% -4px;
+  }
+
+  .rail li:first-child .rail-label {
+    left: 0;
+    translate: 0 -4px;
+  }
+
+  .rail a:hover .rail-label,
+  .rail a:focus-visible .rail-label {
+    translate: -50% 0;
+  }
+
+  .rail li:first-child a:hover .rail-label,
+  .rail li:first-child a:focus-visible .rail-label {
+    translate: 0 0;
+  }
+}
+
+/* With the sound's controls at the top right, the portrait hero's logo starts below them. */
+@media (max-aspect-ratio: 6/5) {
+  :root.js .hero-copy {
+    padding-top: max(64px, 6svh, env(safe-area-inset-top));
+  }
+}
+
+@media (max-aspect-ratio: 23/20) and (max-width: 379px) {
+  .rail a {
+    width: 24px;
+  }
+}
+
+/* ---------- Motion that runs on its own clock, only where motion is welcome ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .ember {
+    animation: ember-rise var(--d) linear var(--l) infinite;
+    animation-play-state: paused;
+  }
+
+  .scene-finale.is-live .ember {
+    animation-play-state: running;
+  }
+
+  .finale-fire::before {
+    animation: fire-breathe 2.6s ease-in-out infinite alternate;
+    animation-play-state: paused;
+  }
+
+  .scene-finale.is-live .finale-fire::before {
+    animation-play-state: running;
+  }
+
+  .sound-toggle[aria-pressed='true'] .sound-wave-2 {
+    animation: wave-pulse 1.8s ease-in-out infinite;
+  }
+
+  /* Stacked, the cut-outs drift a little in their gaps, and the kilim slides. */
+  @supports (animation-timeline: view()) {
+    :root:not(.stage) .interlude.has-deco {
+      view-timeline: --deco block;
+    }
+
+    :root:not(.stage) .deco {
+      animation: deco-drift linear both;
+      animation-timeline: --deco;
+      animation-range: cover;
+    }
+  }
+}
+
+@keyframes ember-rise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  50% {
+    transform: translate3d(var(--sway), calc(var(--h) * -0.5), 0) scale(0.85);
+  }
+
+  78% {
+    opacity: 0.75;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--drift), calc(var(--h) * -1), 0) scale(0.4);
+  }
+}
+
+@keyframes fire-breathe {
+  from {
+    opacity: 0.78;
+    transform: scale(1, 1);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.06, 1.14);
+  }
+}
+
+@keyframes wave-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes deco-drift {
+  from {
+    translate: -3vw 2vh;
+  }
+
+  to {
+    translate: 3vw -2vh;
+  }
+}
+
+/* ---------- Reduced motion on the stage: scenes cross-fade, nothing moves ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root.stage .wall {
+    top: 0;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--wall-a), var(--wall-b));
+  }
+
+  :root.stage .interlude.has-deco,
+  :root.stage .finale-embers {
+    display: none;
+  }
+
+  /* The whole runner hangs within the stage, its label below it. */
+  :root.stage .kilim-band {
+    width: min(100%, (100cqh - var(--cap)) * 3);
+    height: auto;
+    margin-inline: auto;
+    container-type: normal;
+  }
+
+  :root.stage .kilim-track {
+    position: static;
+    width: 100%;
+    height: auto;
+    transform: none;
+  }
+
+  :root.stage .kilim-track img {
+    height: auto;
+  }
+}

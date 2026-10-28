@@ -1,16 +1,27 @@
 ---
 /**
- * The home page: one day on the steppe. Dawn's hero, the seven stations of the tale with
- * the crossing decorations in the gaps between them, and the eclipse night's close.
+ * The home page: the hero, then the tale on one stage. While the page scrolls the stage
+ * stays put and the scroll moves the tale from scene to scene: the prologue, the seven
+ * chapters (each with its work), and the finale, as the day turns into the night of the
+ * eclipse and back towards dawn. The four cut-outs cross the stage between scenes.
+ *
+ * The page's first script (in the head) turns the stage on; without JavaScript the same
+ * markup reads as a stacked page, one station after another.
  */
 import { Picture } from 'astro:assets';
 import { PICTURE_FORMATS, STATIONS, c1DragonTail, c2FeltClouds, c3Standard, c4Huma, logo, vista } from '../art.ts';
+import ChapterRail from '../components/ChapterRail.astro';
+import Finale from '../components/Finale.astro';
+import Scene from '../components/Scene.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import Station from '../components/Station.astro';
+import SoundDock from '../components/SoundDock.astro';
 import WishlistButton from '../components/WishlistButton.astro';
 import { copyFor } from '../copy/index.ts';
+import type { StationId } from '../copy/types.ts';
 import type { Lang } from '../i18n.ts';
 import Base from '../layouts/Base.astro';
+import '../styles/tale.css';
+import { TOTAL, taleCss } from '../tale.ts';
 
 interface Props {
   lang: Lang;
@@ -19,15 +30,35 @@ interface Props {
 const { lang } = Astro.props;
 const { site, home } = copyFor(lang);
 
-const station = (index: number) => {
-  const s = STATIONS[index];
-  if (!s) throw new Error(`No station ${index}`);
+const station = (id: StationId) => {
+  const s = STATIONS.find((st) => st.id === id);
+  if (!s) throw new Error(`No station ${id}`);
   return s;
 };
+const chapters = STATIONS.map((s) => ({ id: s.id, copy: home.stations[s.id] }));
 const LOGO_WIDTHS = [480, 800, 1200, 1600];
+const css = taleCss();
 ---
 
 <Base lang={lang} meta={home.meta} path="/">
+  <Fragment slot="head">
+    <script is:inline>
+      // The stage needs JavaScript; scroll-driven animations drive it where the browser has
+      // them, and the page's script plays the same keyframes elsewhere.
+      (function () {
+        var root = document.documentElement;
+        var sda =
+          typeof CSS !== 'undefined' &&
+          CSS.supports('animation-timeline: view()') &&
+          CSS.supports('animation-range: entry 0% contain 100%');
+        root.classList.add('js', 'stage', sda ? 'sda' : 'motion-js');
+      })();
+    </script>
+    <style is:inline set:html={css} />
+  </Fragment>
+
+  <SoundDock music={home.music} volume={home.volume} listen={home.listen} />
+
   <main>
     <section class="hero">
       <div class="hero-stage">
@@ -59,94 +90,94 @@ const LOGO_WIDTHS = [480, 800, 1200, 1600];
       </div>
     </section>
 
-    <div class="interlude has-deco to-dawn" data-scroll-range="cover">
-      <Picture
-        src={c2FeltClouds}
-        alt=""
-        class="deco deco-clouds"
-        {...PICTURE_FORMATS}
-        widths={[400, 700, 1000, 1606]}
-        sizes="(max-width: 464px) 260px, (min-width: 1536px) 860px, 56vw"
-      />
-    </div>
+    <div class="tale" style={`--tale-total: ${TOTAL}`}>
+      <div class="stage" data-stage>
+        <ChapterRail label={home.chapters} chapters={chapters} />
 
-    <Station station={station(0)} copy={home.stations.hearth} prologue={home.prologue} />
+        <div class="interlude has-deco to-dawn is-near" data-cut="c2">
+          <Picture
+            src={c2FeltClouds}
+            alt=""
+            class="deco deco-clouds"
+            {...PICTURE_FORMATS}
+            widths={[400, 700, 1000, 1606]}
+            sizes="(max-width: 464px) 300px, (min-width: 1536px) 900px, 60vw"
+          />
+        </div>
 
-    <div class="interlude dawn-to-day"></div>
+        <div class="scene scene-prologue band-dawn tone-light is-near" data-scene="prologue">
+          <div class="wall"></div>
+          <div class="scene-body">
+            <p class="prologue-line">{home.prologue}</p>
+          </div>
+        </div>
 
-    <Station station={station(1)} copy={home.stations.day} flip />
+        <Scene station={station('hearth')} copy={home.stations.hearth} replayLabel={home.replay} />
 
-    <div class="interlude has-deco day-to-dusk" data-scroll-range="cover">
-      <Picture
-        src={c3Standard}
-        alt=""
-        class="deco deco-standard"
-        {...PICTURE_FORMATS}
-        widths={[180, 360, 528]}
-        sizes="150px"
-      />
-    </div>
+        <div class="interlude dawn-to-day"></div>
 
-    <Station station={station(2)} copy={home.stations.steppe} />
+        <Scene station={station('day')} copy={home.stations.day} replayLabel={home.replay} flip />
 
-    <div class="interlude dusk-to-night"></div>
+        <div class="interlude has-deco day-to-dusk" data-cut="c3">
+          <Picture
+            src={c3Standard}
+            alt=""
+            class="deco deco-standard"
+            {...PICTURE_FORMATS}
+            widths={[180, 360, 528]}
+            sizes="(min-aspect-ratio: 23/20) 26vh, 150px"
+          />
+        </div>
 
-    <Station station={station(3)} copy={home.stations.night} flip />
+        <Scene station={station('steppe')} copy={home.stations.steppe} replayLabel={home.replay} />
 
-    <div class="interlude has-deco night-to-eclipse" data-scroll-range="cover">
-      <Picture
-        src={c1DragonTail}
-        alt=""
-        class="deco deco-tail"
-        {...PICTURE_FORMATS}
-        widths={[480, 800, 1200, 1800]}
-        sizes="(min-width: 1595px) 1180px, 74vw"
-      />
-    </div>
+        <div class="interlude dusk-to-night"></div>
 
-    <Station station={station(4)} copy={home.stations.eclipse} />
+        <Scene station={station('night')} copy={home.stations.night} replayLabel={home.replay} flip />
 
-    <div class="interlude eclipse-to-ember"></div>
+        <div class="interlude has-deco night-to-eclipse" data-cut="c1">
+          <Picture
+            src={c1DragonTail}
+            alt=""
+            class="deco deco-tail"
+            {...PICTURE_FORMATS}
+            widths={[480, 800, 1200, 1800]}
+            sizes="(min-width: 1595px) 1180px, 74vw"
+          />
+        </div>
 
-    <Station station={station(5)} copy={home.stations.goc} />
+        <Scene station={station('eclipse')} copy={home.stations.eclipse} replayLabel={home.replay} />
 
-    <div class="interlude has-deco ember-to-deep" data-scroll-range="cover">
-      <Picture
-        src={c4Huma}
-        alt=""
-        class="deco deco-huma"
-        {...PICTURE_FORMATS}
-        widths={[300, 600, 900, 1200]}
-        sizes="(max-width: 625px) 200px, (min-width: 1500px) 480px, 32vw"
-      />
-    </div>
+        <div class="interlude eclipse-to-ember"></div>
 
-    <Station station={station(6)} copy={home.stations.together} />
+        <Scene station={station('goc')} copy={home.stations.goc} replayLabel={home.replay} />
 
-    <div class="interlude deep-to-close"></div>
+        <div class="interlude has-deco ember-to-deep" data-cut="c4">
+          <Picture
+            src={c4Huma}
+            alt=""
+            class="deco deco-huma"
+            {...PICTURE_FORMATS}
+            widths={[300, 600, 900, 1200]}
+            sizes="(max-width: 625px) 240px, (min-width: 1500px) 520px, 36vw"
+          />
+        </div>
 
-    <div class="close band-close tone-dark">
-      <p class="outro">{home.outro}</p>
-      <div class="close-mark">
-        <div class="eclipse-moon" aria-hidden="true"></div>
-        <Picture
-          src={logo}
-          alt=""
-          class="close-logo"
-          {...PICTURE_FORMATS}
-          widths={LOGO_WIDTHS}
-          sizes="(max-width: 604px) 86vw, 520px"
-        />
+        <Scene station={station('together')} copy={home.stations.together} replayLabel={home.replay} flip />
+
+        <div class="interlude deep-to-close"></div>
+
+        <Finale outro={home.outro} wishlist={site.wishlist} comingTo={site.comingTo} />
       </div>
-      <WishlistButton label={site.wishlist} />
-      <p class="coming">{site.comingTo}</p>
     </div>
   </main>
   <SiteFooter lang={lang} />
 
   <script>
-    import { startMotionFallback } from '../scripts/motion.ts';
+    import { startStage } from '../scripts/stage.ts';
+    import { startSound } from '../scripts/sound.ts';
 
-    startMotionFallback();
+    const stage = startStage();
+    startSound(stage);
   </script>
 </Base>
