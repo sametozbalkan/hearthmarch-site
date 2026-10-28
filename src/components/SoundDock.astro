@@ -1,11 +1,12 @@
 ---
 /**
  * The sound's controls, fixed at the top right over every scene:
- * - the music's switch, the page's first focusable element, so the music that starts by
- *   itself can be stopped at once from the keyboard (and restarted);
- * - the music's volume;
+ * - the music's pill: its switch, the page's first focusable element, so the music that starts
+ *   by itself can be stopped at once from the keyboard (and restarted); and its volume, which
+ *   the pill shows when a mouse comes over it or focus moves into it, growing to the left;
  * - the ozan's narration, which plays only when asked for.
- * They stay hidden until the page's script runs, since nothing plays without it.
+ * The switch shows what is heard: off until the music plays. They stay hidden until the
+ * page's script runs, since nothing plays without it.
  */
 import { BED_VOLUME } from '../sound.ts';
 
@@ -23,18 +24,20 @@ const value = Math.round(BED_VOLUME * 100);
 ---
 
 <div class="sound-dock" data-sound-dock hidden>
-  <button type="button" class="sound-toggle bed-toggle" aria-pressed="true" data-bed-toggle>
-    <svg class="sound-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
-      <path d="M4 9.2h3.6L12.4 5v14l-4.8-4.2H4z" fill="currentColor"></path>
-      <path class="sound-wave sound-wave-1" d="M15.4 9.3a3.8 3.8 0 0 1 0 5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
-      <path class="sound-wave sound-wave-2" d="M17.9 6.8a7.3 7.3 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
-      <path class="sound-mute" d="m16 9.6 4.8 4.8m0-4.8L16 14.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
-    </svg>
-    <span class="visually-hidden">{music}</span>
-  </button>
-  <div class="sound-volume">
-    <label class="visually-hidden" for="bed-volume">{volume}</label>
-    <input id="bed-volume" type="range" min="0" max="100" step="5" value={value} aria-valuetext={`${value}%`} style={`--fill: ${value}%`} />
+  <div class="music-pill">
+    <button type="button" class="bed-toggle" aria-pressed="false" data-bed-toggle>
+      <svg class="sound-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+        <path d="M4 9.2h3.6L12.4 5v14l-4.8-4.2H4z" fill="currentColor"></path>
+        <path class="sound-wave sound-wave-1" d="M15.4 9.3a3.8 3.8 0 0 1 0 5.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+        <path class="sound-wave sound-wave-2" d="M17.9 6.8a7.3 7.3 0 0 1 0 10.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+        <path class="sound-mute" d="m16 9.6 4.8 4.8m0-4.8L16 14.4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+      </svg>
+      <span class="visually-hidden">{music}</span>
+    </button>
+    <div class="music-volume">
+      <label class="visually-hidden" for="bed-volume">{volume}</label>
+      <input id="bed-volume" type="range" min="0" max="100" step="5" value={value} aria-valuetext={`${value}%`} style={`--fill: ${value}%`} />
+    </div>
   </div>
   <button type="button" class="sound-toggle narration-toggle" aria-pressed="false" data-narration-toggle>
     <svg class="sound-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">

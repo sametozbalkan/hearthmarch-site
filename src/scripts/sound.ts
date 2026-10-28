@@ -59,8 +59,15 @@ interface PlayingClip extends Playing {
   mark: Element | null;
 }
 
-/** Calls back on a change of the bed's or the narration's state, for the controls. */
-type Listener = (bed: boolean, narration: boolean) => void;
+/**
+ * What the music's switch shows: `on` only while the music is heard; `starting` from the
+ * moment it is asked for until it is heard (loading); `off` otherwise, including while the
+ * browser waits for the visitor's first press or key.
+ */
+export type MusicState = 'off' | 'starting' | 'on';
+
+/** Calls back on a change of the music's or the narration's state, for the controls. */
+type Listener = (music: MusicState, narration: boolean) => void;
 
 class Sound {
   readonly ctx: AudioContext;
@@ -103,11 +110,26 @@ class Sound {
     this.bedVolume.connect(this.duckBus);
     this.voiceBus = this.ctx.createGain();
     this.voiceBus.connect(this.master);
-    this.ctx.addEventListener('statechange', () => this.sync());
+    this.ctx.addEventListener('statechange', () => {
+      this.sync();
+      this.notify();
+    });
   }
 
   get running(): boolean {
     return this.ctx.state === 'running';
+  }
+
+  /** What the music's switch shows. */
+  get music(): MusicState {
+    if (!this.running || !this.bedWanted) return 'off';
+    if (this.bed.length > 0) return 'on';
+    return this.bedLoading ? 'starting' : 'off';
+  }
+
+  /** Tells the controls what is heard now. */
+  notify(): void {
+    this.listener(this.music, this.narrationWanted);
   }
 
   /** Inside a press or a key: asks the browser for sound (iOS also needs a sound played). */
@@ -127,16 +149,20 @@ class Sound {
     this.setAccents();
   }
 
-  /** The bed's switch. */
+  /**
+   * The music's switch acts on what is heard: it stops the music that plays, and starts it
+   * otherwise, the press itself being the gesture that lets the browser play sound.
+   */
   toggleBed(): void {
-    this.bedWanted = !this.bedWanted;
-    if (this.bedWanted) {
+    if (this.music === 'on') {
+      this.bedWanted = false;
+      this.stopBed();
+    } else {
+      this.bedWanted = true;
       this.unlock();
       this.sync();
-    } else {
-      this.stopBed();
     }
-    this.listener(this.bedWanted, this.narrationWanted);
+    this.notify();
   }
 
   /** The narration's switch. */
@@ -159,7 +185,7 @@ class Sound {
     }
     this.showReplay();
     this.prepare(this.scene);
-    this.listener(this.bedWanted, this.narrationWanted);
+    this.notify();
   }
 
   /** The bed's volume (0 to 1). */
@@ -229,10 +255,14 @@ class Sound {
   private startBed(): void {
     if (this.bed.length > 0 || this.bedLoading) return;
     this.bedLoading = true;
+    this.notify();
     void Promise.all(BED.map((part) => this.load(part.key)))
       .then((buffers) => {
         this.bedLoading = false;
-        if (!this.bedWanted || !this.running || this.bed.length > 0) return;
+        if (!this.bedWanted || !this.running || this.bed.length > 0) {
+          this.notify();
+          return;
+        }
         // Every part starts at the same instant; then the whole bed fades in from silence.
         const when = this.ctx.currentTime + 0.05;
         this.bed = BED.map((part, i) => this.loop(part, buffers[i], when, partGain(part)));
@@ -242,9 +272,11 @@ class Sound {
         gain.linearRampToValueAtTime(this.volume * 0.45, when + BED_FADE_IN * 0.6);
         gain.linearRampToValueAtTime(this.volume, when + BED_FADE_IN);
         this.setAccents();
+        this.notify();
       })
       .catch(() => {
         this.bedLoading = false;
+        this.notify();
       });
   }
 
@@ -498,8 +530,10 @@ export function startSound(stage: Stage): void {
   if (!dock || !bedToggle || !narrationToggle || typeof AudioContext === 'undefined') return;
   dock.hidden = false;
 
-  const show = (bed: boolean, narration: boolean): void => {
-    bedToggle.setAttribute('aria-pressed', String(bed));
+  // The music's switch shows what is heard; while the music loads its waves pulse faintly.
+  const show = (music: MusicState, narration: boolean): void => {
+    bedToggle.setAttribute('aria-pressed', String(music === 'on'));
+    bedToggle.toggleAttribute('data-starting', music === 'starting');
     narrationToggle.setAttribute('aria-pressed', String(narration));
   };
 
@@ -526,8 +560,9 @@ export function startSound(stage: Stage): void {
     return sound;
   };
 
-  // The first press or key anywhere starts the bed. It never stops the event, so a link or a
-  // button still does what it was pressed for; the bed's own switch decides for itself.
+  // The first press or key anywhere starts the music. It never stops the event, so a link or
+  // a button still does what it was pressed for; a press on the music's own switch is left to
+  // the switch, which starts the music when none is heard.
   const onGesture = (event: Event): void => {
     if (event instanceof PointerEvent && event.type === 'pointerdown' && event.pointerType !== 'mouse') return;
     if (event instanceof KeyboardEvent && event.key === 'Escape') return;

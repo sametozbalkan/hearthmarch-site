@@ -9,7 +9,7 @@
  * markup reads as a stacked page, one station after another.
  */
 import { Picture } from 'astro:assets';
-import { PICTURE_FORMATS, STATIONS, c1DragonTail, c2FeltClouds, c3Standard, c4Huma, logo, vista } from '../art.ts';
+import { PICTURE_FORMATS, STATIONS, c1Dragon, c2FeltClouds, c3Standard, c4Huma, logo, vista } from '../art.ts';
 import ChapterRail from '../components/ChapterRail.astro';
 import Finale from '../components/Finale.astro';
 import Scene from '../components/Scene.astro';
@@ -137,12 +137,12 @@ const css = taleCss();
 
         <div class="interlude has-deco night-to-eclipse" data-cut="c1">
           <Picture
-            src={c1DragonTail}
+            src={c1Dragon}
             alt=""
-            class="deco deco-tail"
+            class="deco deco-dragon"
             {...PICTURE_FORMATS}
-            widths={[480, 800, 1200, 1800]}
-            sizes="(min-width: 1595px) 1180px, 74vw"
+            widths={[640, 1000, 1500, 2141]}
+            sizes="(min-aspect-ratio: 23/20) 112vw, 175vw"
           />
         </div>
 

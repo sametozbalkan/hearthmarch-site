@@ -62,7 +62,7 @@ The contact addresses and the copyright year live in the same file.
 The scroll is the browser's own: the wheel, touch, the keys and the scrollbar work as on any page, and nothing re-times them.
 
 - **The stage.** After the hero, one screen stays pinned while the page scrolls past it. Each scene holds for about a screen of scroll; between scenes, the old one leaves, the next hour's wall rises over it with its colour, and the new scene arrives. Inside a scene the work slowly pushes in.
-- **The cut-outs** each cross the stage once, between two scenes: the felt clouds from the hero into the tale, the standard between II and III, the serpent's tail between IV and V, the Hüma between VI and VII. **The kilim** travels across its scene, so the caravan walks on.
+- **The cut-outs** each cross the stage once, between two scenes: the felt clouds from the hero into the tale, the standard between II and III, the dragon between IV and V, the Hüma between VI and VII. **The kilim** travels across its scene, so the caravan walks on.
 - **The finale:** the shadow slides off the moon, moonlight and a first light of dawn rise, embers drift up from the fire under the logo, then the closing line and the wishlist button arrive.
 - **The chapter rail** at the stage's edge shows where the tale is; each mark, and a link such as `/#night`, jumps to its chapter.
 - **One timeline, two engines.** `src/tale.ts` lists every move; the build turns it into CSS scroll-driven animations, and where a browser lacks them `src/scripts/stage.ts` plays the same keyframes from the scroll position. Only `opacity` and `transform` animate.

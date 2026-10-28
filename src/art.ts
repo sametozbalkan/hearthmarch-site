@@ -5,7 +5,7 @@
 import type { ImageMetadata, ImageOutputFormat } from 'astro';
 import type { StationId } from './copy/types.ts';
 
-import c1DragonTail from './assets/art/c1_dragon_tail.png';
+import c1Dragon from './assets/art/c1_dragon.png';
 import c2FeltClouds from './assets/art/c2_felt_clouds.png';
 import c3Standard from './assets/art/c3_standard.png';
 import c4Huma from './assets/art/c4_huma.png';
@@ -21,7 +21,7 @@ import s6GocKilim from './assets/art/s6_goc_kilim.jpg';
 import s7TogetherPetroglyph from './assets/art/s7_together_petroglyph.jpg';
 import vista from './assets/art/vista.jpg';
 
-export { c1DragonTail, c2FeltClouds, c3Standard, c4Huma, icon, keyArt, logo, vista };
+export { c1Dragon, c2FeltClouds, c3Standard, c4Huma, icon, keyArt, logo, vista };
 
 /**
  * The formats every <Picture> is made in: AVIF first, WebP for the browsers without it.

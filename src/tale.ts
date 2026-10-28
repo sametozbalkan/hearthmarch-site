@@ -36,7 +36,7 @@ const STEPS: readonly Step[] = [
   { scene: 'steppe', dwell: 100 },
   { cross: 70 },
   { scene: 'night', dwell: 100 },
-  { cross: 90, cut: 'c1' },
+  { cross: 120, cut: 'c1' },
   { scene: 'eclipse', dwell: 100 },
   { cross: 60 },
   { scene: 'goc', dwell: 150 },
@@ -167,7 +167,7 @@ export const FINALE = {
 /* ---------- Tracks ---------- */
 
 /** How a track's numbers become a CSS value. */
-export type Fmt = 'opacity' | 'rise' | 'wall' | 'push' | 'sweep' | 'kilim' | 'shadow' | 'grow';
+export type Fmt = 'opacity' | 'rise' | 'wall' | 'push' | 'sweep' | 'flight' | 'dragon' | 'kilim' | 'shadow' | 'grow';
 
 const n = (v: number): string => String(Math.round(v * 1000) / 1000);
 
@@ -177,6 +177,15 @@ export const FORMATS: Record<Fmt, (v: readonly number[]) => string> = {
   wall: (v) => `translate3d(0, ${n(v[0] ?? 0)}lvh, 0)`,
   push: (v) => `scale(${n(v[0] ?? 1)})`,
   sweep: (v) => `translate3d(${n(v[0] ?? 0)}vw, ${n(v[1] ?? 0)}svh, 0) rotate(${n(v[2] ?? 0)}deg)`,
+  // The Hüma's picture faces right and it flies up to the left: mirrored, and tilted by the
+  // slope of its path on this screen (its rise in svh over its run in vw), so its head leads.
+  flight: (v) => {
+    const { rise, run } = flightSlope();
+    return `translate3d(${n(v[0] ?? 0)}vw, ${n(v[1] ?? 0)}svh, 0) rotate(calc(atan2(${n(rise)}svh, ${n(run)}vw) + ${n(v[2] ?? 0)}deg)) scale(-1, 1)`;
+  },
+  // The dragon's x is a share of its reach (from the screen's middle to just past its edge,
+  // plus half its own length), so its whole body passes at any width.
+  dragon: (v) => `translate3d(calc(${n(v[0] ?? 0)} * var(--dragon-reach)), ${n(v[1] ?? 0)}svh, 0) rotate(${n(v[2] ?? 0)}deg)`,
   kilim: (v) => `translate3d(calc(-50% + ${n(v[0] ?? 0)} * var(--kilim-a)), 0, 0)`,
   shadow: (v) => `translate3d(${n(v[0] ?? 0)}%, ${n(v[1] ?? 0)}%, 0)`,
   grow: (v) => `translate3d(0, ${n(v[0] ?? 0)}svh, 0) scale(${n(v[1] ?? 1)})`,
@@ -249,12 +258,12 @@ function chapterTracks(scene: SceneTimes): Track[] {
   // so it never crosses text.
   const cutIn = hasCut(crossIn);
   const cutOut = hasCut(crossOut);
-  const arriveWork = crossIn ? at(crossIn, cutIn ? 0.8 : 0.52) : dwell[0] - 10;
-  const arriveText = crossIn ? at(crossIn, cutIn ? 0.84 : 0.62) : dwell[0] - 10;
+  const arriveWork = crossIn ? at(crossIn, cutIn ? 0.82 : 0.52) : dwell[0] - 10;
+  const arriveText = crossIn ? at(crossIn, cutIn ? 0.86 : 0.62) : dwell[0] - 10;
   const arrived = crossIn ? crossIn[1] : dwell[0];
   const leave = crossOut ? crossOut[0] : dwell[1];
   const gone = crossOut ? at(crossOut, cutOut ? 0.2 : 0.36) : dwell[1] + 20;
-  const textGone = crossOut ? at(crossOut, cutOut ? 0.16 : 0.3) : dwell[1] + 20;
+  const textGone = crossOut ? at(crossOut, cutOut ? 0.14 : 0.3) : dwell[1] + 20;
   if (crossIn) {
     tracks.push({
       sel: `${s} > .wall`,
@@ -487,31 +496,40 @@ const CUT_PATHS: Record<CutId, ReadonlyArray<readonly [number, readonly number[]
     [0.75, [50, -1, -1]],
     [1, [100, 3, 4]],
   ],
-  // The serpent's tail slides in from the left and out to the right, swaying.
+  // The dragon crosses head first from left to right, its whole body passing, with a gentle
+  // serpent's sway that keeps its head level (x as a share of its reach: the 'dragon' format).
   c1: [
-    [0, [-110, 4, 3]],
-    [0.33, [-40, -3, -2]],
-    [0.66, [35, 3, 2]],
-    [1, [110, -4, -3]],
+    [0, [-1, 1.5, 0.6]],
+    [0.33, [-0.34, -1.5, -0.6]],
+    [0.66, [0.32, 1.5, 0.6]],
+    [1, [1, -1, -0.4]],
   ],
-  // The Hüma flies off up and to the left.
+  // The Hüma flies off up and to the left, its head along its path (the 'flight' format).
   c4: [
-    [0, [100, 22, -2]],
-    [1, [-100, -26, -12]],
+    [0, [100, 22, 1.5]],
+    [1, [-100, -26, -1.5]],
   ],
 };
 
+/** How far the Hüma rises (svh) over how far it travels (vw), from the ends of its path. */
+function flightSlope(): { rise: number; run: number } {
+  const path = CUT_PATHS.c4;
+  const first = path[0]?.[1] ?? [0, 0];
+  const last = path[path.length - 1]?.[1] ?? [0, 0];
+  return { rise: (first[1] ?? 0) - (last[1] ?? 0), run: (first[0] ?? 0) - (last[0] ?? 0) };
+}
+
 function cutTracks(cut: CutTimes): Track[] {
   const path = CUT_PATHS[cut.id];
-  // The sweep runs a little inside the crossing, so the old text has gone and the new one waits.
-  const span: Span = cut.id === 'c2' ? cut.span : [at(cut.span, 0.12), at(cut.span, 0.86)];
+  // The sweep runs inside the crossing, after the old text has gone and before the new arrives.
+  const span: Span = cut.id === 'c2' ? cut.span : [at(cut.span, 0.16), at(cut.span, 0.8)];
   return [
     {
       sel: `[data-cut="${cut.id}"] .deco`,
       props: [
         prop(
           'transform',
-          'sweep',
+          cut.id === 'c4' ? 'flight' : cut.id === 'c1' ? 'dragon' : 'sweep',
           path.map(([f, v]) => [at(span, f), v] as const),
         ),
       ],
