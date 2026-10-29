@@ -7,8 +7,8 @@ export const privacy: PrivacyCopy = {
       'What the Hearthmarch website and game do with your data: the site collects nothing, and the game sends nothing unless you play online co-op.',
   },
   heading: 'Privacy policy',
-  draftNotice: 'Draft for review. This policy is not in force yet, and it is not legal advice.',
-  updated: 'Draft of 28 October 2026',
+  draftNotice: '',
+  updated: 'Last updated 28 October 2026',
   summary:
     'In short: this website collects nothing about you, and the game sends nothing about you unless you play online co-op, which runs on Epic Online Services.',
   sections: [
